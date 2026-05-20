@@ -1,6 +1,6 @@
-# conda-proxy
+# Overview
 
-A lightweight, dependency-minimal caching proxy for conda package channels.
+This is a lightweight, dependency-minimal caching proxy for conda package channels.
 Inspired by [Quetz](https://github.com/mamba-org/quetz) but focused on a single
 use-case: **transparently proxy and cache upstream channels** so your team or
 CI pipelines can install packages quickly from a local mirror.
@@ -51,21 +51,16 @@ python server.py --config config.toml   # use config file
 ## Configuration (`config.toml`)
 
 ```toml
-[server]
-host      = "127.0.0.1"
-port      = 8000
-cache_dir = "./conda_cache"
-log_level = "info"
-
 [cache]
+cache_dir = "./conda_cache"
 repodata_ttl = 300    # seconds; 0 = always re-fetch
 package_ttl  = -1     # -1 = cache forever (recommended for packages)
 
 [channels.conda-forge]
 url = "https://conda.anaconda.org/conda-forge"
 
-[channels.paulscherrerinstitute]
-url = "https://conda.anaconda.org/paulscherrerinstitute"
+[channels.pytorch]
+url = "https://conda.anaconda.org/pytorch"
 ```
 
 ---
@@ -92,7 +87,7 @@ http://localhost:8000/channels/defaults/channeldata.json
 |--------|------|-------------|
 | `GET`    | `/` | List configured channels |
 | `GET`    | `/admin/cache/stats` | Disk usage per channel |
-| `DELETE` | `/admin/cache/{channel}` | Purge all files for a channel |
+<!-- | `DELETE` | `/admin/cache/{channel}` | Purge all files for a channel | -->
 | `DELETE` | `/admin/cache/{channel}/repodata` | Purge only repodata (force index refresh) |
 
 ---
@@ -126,5 +121,14 @@ dependencies:
 
 - Run behind **nginx** or **caddy** for TLS termination.
 - Mount `cache_dir` on an SSD or NFS share for team use.
-- Set `host = "0.0.0.0"` to expose to your network.
 - Use `repodata_ttl = 0` in CI to always get fresh package indices.
+
+
+# Development
+
+Build and run the server with Docker:
+
+```bash
+docker build . -t conda-cache
+docker run -p 8000:8000 -v $(pwd)/config.toml:/app/config.toml -v $(pwd)/conda-cache:/cache conda-cache
+```

@@ -39,13 +39,9 @@ log = logging.getLogger("conda-proxy")
 # ---------------------------------------------------------------------------
 
 DEFAULT_CONFIG = {
-    "server": {
-        "host": "0.0.0.0",
-        "port": 8000,
-        "cache_dir": "./conda_cache",
-        "log_level": "info",
-    },
     "cache": {
+        # Cache directory for repodata and package files.
+        "cache_dir": "./conda_cache",
         # Repodata (repodata.json / repodata.json.zst / current_repodata.json)
         # is re-fetched from upstream if older than this many seconds.
         "repodata_ttl": 300,  # 5 minutes
@@ -54,9 +50,6 @@ DEFAULT_CONFIG = {
         "package_ttl": -1,
     },
     # channels section is populated by the config file, e.g.:
-    # [channels.defaults]
-    # url = "https://repo.anaconda.com/pkgs/main"
-    #
     # [channels.conda-forge]
     # url = "https://conda.anaconda.org/conda-forge"
     "channels": {},
@@ -131,7 +124,7 @@ def is_cache_fresh(path: Path, ttl: int) -> bool:
 
 
 def create_app(config: dict) -> FastAPI:
-    cache_root = Path(config["server"]["cache_dir"]).expanduser().resolve()
+    cache_root = Path(config["cache"]["cache_dir"]).expanduser().resolve()
     cache_root.mkdir(parents=True, exist_ok=True)
 
     repodata_ttl: int = config["cache"]["repodata_ttl"]
@@ -358,9 +351,15 @@ def main():
 
     parser = argparse.ArgumentParser(description="Conda channel proxy/cache server")
     parser.add_argument("--config", "-c", default=None, help="Path to config.toml")
-    parser.add_argument("--host", default=None, help="Bind host (overrides config)")
     parser.add_argument(
-        "--port", type=int, default=None, help="Bind port (overrides config)"
+        "--host", default="0.0.0.0", help="Bind host (overrides config)"
+    )
+    parser.add_argument("--port", type=int, default=8000, help="Bind port")
+    parser.add_argument(
+        "--cache-dir", default=None, help="Cache directory (overrides config)"
+    )
+    parser.add_argument(
+        "--log-level", default="info", help="Log level - debug/info/warning/error"
     )
     parser.add_argument(
         "--reload", action="store_true", help="Auto-reload on code changes (dev)"
@@ -369,9 +368,13 @@ def main():
 
     config = load_config(args.config)
 
-    host = args.host or config["server"]["host"]
-    port = args.port or config["server"]["port"]
-    log_level = config["server"].get("log_level", "info")
+    host = args.host
+    port = args.port
+    # Override cache_dir if supplied via CLI, otherwise use config value
+    cache_dir = args.cache_dir or config["cache"]["cache_dir"]
+    config["cache"]["cache_dir"] = cache_dir
+
+    log_level = args.log_level.lower()
 
     app = create_app(config)
 

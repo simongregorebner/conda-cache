@@ -1,14 +1,8 @@
 # conda-proxy configuration
 # ─────────────────────────────────────────────────────────────────────────────
 
-[server]
-# host      = "127.0.0.1"
-host      = "localhost"
-port      = 8000
-cache_dir = "./conda_cache"   # directory where packages are stored on disk
-log_level = "info"            # debug | info | warning | error
-
 [cache]
+cache_dir = "./conda_cache"   # directory where packages are stored on disk
 # Repodata (package index) TTL in seconds.
 # After this time the index is re-fetched from upstream.
 # Set to 0 to always re-fetch (useful during active development).
@@ -21,12 +15,6 @@ package_ttl = -1
 # ─────────────────────────────────────────────────────────────────────────────
 # Channels to proxy.
 # Each section is [channels.<alias>] with a required `url` key.
-# Use the alias in your conda/mamba -c flag:
-#   mamba install -c http://localhost:8000/t/forge numpy
-# ─────────────────────────────────────────────────────────────────────────────
-
-# [channels.defaults]
-# url = "https://repo.anaconda.com/pkgs/main"
 
 [channels.conda-forge]
 url = "https://conda.anaconda.org/conda-forge"
@@ -37,6 +25,3 @@ url = "https://conda.anaconda.org/paulscherrerinstitute"
 [channels.slsdetectorgroup]
 url = "https://conda.anaconda.org/slsdetectorgroup"
 
-# Add more channels as needed, e.g.:
-# [channels.pytorch]
-# url = "https://conda.anaconda.org/pytorch"
