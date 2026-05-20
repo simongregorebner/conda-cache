@@ -280,18 +280,18 @@ def create_app(config: dict) -> FastAPI:
     # Cache management endpoints
     # ------------------------------------------------------------------
 
-    @app.delete("/admin/cache/{channel_name}")
-    async def purge_channel_cache(channel_name: str):
-        """Delete all cached files for a channel (forces re-fetch)."""
-        if channel_name not in channels:
-            raise HTTPException(status_code=404, detail="Unknown channel")
-        import shutil
+    # @app.delete("/admin/cache/{channel_name}")
+    # async def purge_channel_cache(channel_name: str):
+    #     """Delete all cached files for a channel (forces re-fetch)."""
+    #     if channel_name not in channels:
+    #         raise HTTPException(status_code=404, detail="Unknown channel")
+    #     import shutil
 
-        target = cache_root / channel_name
-        if target.exists():
-            shutil.rmtree(target)
-            log.info("Purged cache for channel '%s'", channel_name)
-        return {"purged": channel_name}
+    #     target = cache_root / channel_name
+    #     if target.exists():
+    #         shutil.rmtree(target)
+    #         log.info("Purged cache for channel '%s'", channel_name)
+    #     return {"purged": channel_name}
 
     @app.delete("/admin/cache/{channel_name}/repodata")
     async def purge_repodata(channel_name: str):
