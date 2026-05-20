@@ -20,12 +20,9 @@ CI pipelines can install packages quickly from a local mirror.
 
 ## Requirements
 
+```bash
+pip install -r requirements.txt
 ```
-pip install fastapi uvicorn httpx
-```
-
-Python ≥ 3.11 (uses built-in `tomllib`).  
-For Python 3.10, also `pip install tomli` and change the import.
 
 ---
 
@@ -37,7 +34,7 @@ For Python 3.10, also `pip install tomli` and change the import.
 python server.py --config config.toml
 
 # 3. Install packages via the proxy
-mamba install -c http://localhost:8000/t/forge -c http://localhost:8000/t/defaults numpy
+mamba install -c http://localhost:8000/channels/conda-forge -c http://localhost:8000/channels/defaults numpy
 ```
 
 ### CLI options
@@ -64,11 +61,11 @@ log_level = "info"
 repodata_ttl = 300    # seconds; 0 = always re-fetch
 package_ttl  = -1     # -1 = cache forever (recommended for packages)
 
-[channels.forge]
+[channels.conda-forge]
 url = "https://conda.anaconda.org/conda-forge"
 
-[channels.defaults]
-url = "https://repo.anaconda.com/pkgs/main"
+[channels.paulscherrerinstitute]
+url = "https://conda.anaconda.org/paulscherrerinstitute"
 ```
 
 ---
@@ -76,14 +73,15 @@ url = "https://repo.anaconda.com/pkgs/main"
 ## URL structure
 
 ```
-http://localhost:8000/t/<channel-alias>/<subdir>/<filename>
+http://localhost:8000/channels/<channel-alias>/<subdir>/<filename>
 ```
 
 Examples:
+
 ```
-http://localhost:8000/t/forge/linux-64/repodata.json
-http://localhost:8000/t/forge/linux-64/numpy-1.26.0-py311h...conda
-http://localhost:8000/t/defaults/channeldata.json
+http://localhost:8000/channels/conda-forge/linux-64/repodata.json
+http://localhost:8000/channels/conda-forge/linux-64/numpy-1.26.0-py311h...conda
+http://localhost:8000/channels/defaults/channeldata.json
 ```
 
 ---
@@ -103,22 +101,20 @@ http://localhost:8000/t/defaults/channeldata.json
 
 **Ad-hoc:**
 ```bash
-mamba install -c http://localhost:8000/t/forge numpy pandas
+mamba install -c http://localhost:8000/channels/conda-forge numpy pandas
 ```
 
 **In `~/.condarc`:**
 ```yaml
 channels:
-  - http://localhost:8000/t/forge
-  - http://localhost:8000/t/defaults
-  - nodefaults
+  - http://localhost:8000/channels/conda-forge
 ```
 
 **In `environment.yml`:**
 ```yaml
 name: myenv
 channels:
-  - http://localhost:8000/t/forge
+  - http://localhost:8000/channels/conda-forge
 dependencies:
   - numpy
   - pandas
