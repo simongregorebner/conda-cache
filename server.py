@@ -359,7 +359,10 @@ def main():
         "--cache-dir", default=None, help="Cache directory (overrides config)"
     )
     parser.add_argument(
-        "--log-level", default="info", help="Log level - debug/info/warning/error"
+        "--log-level",
+        default="info",
+        choices=["debug", "info", "warning", "error"],
+        help="Log level (debug/info/warning/error)",
     )
     parser.add_argument(
         "--reload", action="store_true", help="Auto-reload on code changes (dev)"
@@ -371,8 +374,8 @@ def main():
     host = args.host
     port = args.port
     # Override cache_dir if supplied via CLI, otherwise use config value
-    cache_dir = args.cache_dir or config["cache"]["cache_dir"]
-    config["cache"]["cache_dir"] = cache_dir
+    if args.cache_dir is not None:
+        config["cache"]["cache_dir"] = args.cache_dir
 
     log_level = args.log_level.lower()
 
