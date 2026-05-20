@@ -7,10 +7,10 @@ Usage:
     python server.py --config config.toml --host 0.0.0.0 --port 8080
 
 Then point conda/mamba at it:
-    conda install -c http://localhost:8000/t/defaults numpy
+    conda install -c http://localhost:8000/channels/defaults numpy
     # or set in ~/.condarc:
     #   channels:
-    #     - http://localhost:8000/t/defaults
+    #     - http://localhost:8000/channels/defaults
 """
 
 import asyncio
@@ -51,7 +51,7 @@ DEFAULT_CONFIG = {
     "cache": {
         # Repodata (repodata.json / repodata.json.zst / current_repodata.json)
         # is re-fetched from upstream if older than this many seconds.
-        "repodata_ttl": 300,          # 5 minutes
+        "repodata_ttl": 300,  # 5 minutes
         # Package files (.conda / .tar.bz2) are immutable – cache forever.
         # Set to -1 to never evict. Positive value = max age in seconds.
         "package_ttl": -1,
@@ -69,7 +69,9 @@ DEFAULT_CONFIG = {
 def load_config(path: Optional[str]) -> dict:
     cfg = {k: dict(v) for k, v in DEFAULT_CONFIG.items()}
     if path is None:
-        log.warning("No config file supplied – using built-in defaults with no channels.")
+        log.warning(
+            "No config file supplied – using built-in defaults with no channels."
+        )
         return cfg
     with open(path, "rb") as fh:
         user = tomllib.load(fh)
@@ -130,12 +132,13 @@ def is_cache_fresh(path: Path, ttl: int) -> bool:
 # Application factory
 # ---------------------------------------------------------------------------
 
+
 def create_app(config: dict) -> FastAPI:
     cache_root = Path(config["server"]["cache_dir"]).expanduser().resolve()
     cache_root.mkdir(parents=True, exist_ok=True)
 
     repodata_ttl: int = config["cache"]["repodata_ttl"]
-    package_ttl: int  = config["cache"]["package_ttl"]
+    package_ttl: int = config["cache"]["package_ttl"]
 
     channels: dict[str, str] = {
         name: ch_cfg["url"].rstrip("/")
@@ -171,27 +174,24 @@ def create_app(config: dict) -> FastAPI:
     async def index():
         return {
             "service": "conda-proxy",
-            "channels": {
-                name: f"/t/{name}/"
-                for name in channels
-            },
+            "channels": {name: f"/channels/{name}/" for name in channels},
         }
 
-    @app.get("/t/{channel_name}/{subpath:path}")
+    @app.get("/channels/{channel_name}/{subpath:path}")
     async def proxy(channel_name: str, subpath: str, request: Request):
         """
         Proxy and cache requests for a configured channel.
 
         conda/mamba will request paths like:
-          /t/<channel>/linux-64/repodata.json
-          /t/<channel>/linux-64/numpy-1.26.0-py311h...conda
-          /t/<channel>/channeldata.json
+          /channels/<channel>/linux-64/repodata.json
+          /channels/<channel>/linux-64/numpy-1.26.0-py311h...conda
+          /channels/<channel>/channeldata.json
         """
         if channel_name not in channels:
             raise HTTPException(
                 status_code=404,
                 detail=f"Unknown channel '{channel_name}'. "
-                       f"Available: {list(channels.keys())}",
+                f"Available: {list(channels.keys())}",
             )
 
         upstream_base = channels[channel_name]
@@ -239,7 +239,9 @@ def create_app(config: dict) -> FastAPI:
             raise HTTPException(status_code=502, detail=f"Upstream unreachable: {exc}")
 
         if upstream_resp.status_code == 404:
-            raise HTTPException(status_code=404, detail=f"Not found upstream: {subpath}")
+            raise HTTPException(
+                status_code=404, detail=f"Not found upstream: {subpath}"
+            )
 
         if upstream_resp.status_code != 200:
             log.warning(
@@ -258,8 +260,11 @@ def create_app(config: dict) -> FastAPI:
                 async for chunk in upstream_resp.aiter_bytes(chunk_size=65536):
                     fh.write(chunk)
             tmp.replace(local_file)
-            log.info("CACHED     %s  (%s bytes)", local_file.relative_to(cache_root),
-                     local_file.stat().st_size)
+            log.info(
+                "CACHED     %s  (%s bytes)",
+                local_file.relative_to(cache_root),
+                local_file.stat().st_size,
+            )
         except Exception as exc:
             tmp.unlink(missing_ok=True)
             log.error("Failed to cache %s: %s", local_file, exc)
@@ -281,6 +286,7 @@ def create_app(config: dict) -> FastAPI:
         if channel_name not in channels:
             raise HTTPException(status_code=404, detail="Unknown channel")
         import shutil
+
         target = cache_root / channel_name
         if target.exists():
             shutil.rmtree(target)
@@ -323,8 +329,8 @@ def create_app(config: dict) -> FastAPI:
 
 _MEDIA_TYPES = {
     ".json": "application/json",
-    ".bz2":  "application/x-bzip2",
-    ".zst":  "application/zstd",
+    ".bz2": "application/x-bzip2",
+    ".zst": "application/zstd",
     ".conda": "application/x-conda",
     ".tar.bz2": "application/x-bzip2",
     ".html": "text/html",
@@ -348,14 +354,19 @@ def _forward_headers(request: Request) -> dict:
 # CLI entry-point
 # ---------------------------------------------------------------------------
 
+
 def main():
     import argparse
 
     parser = argparse.ArgumentParser(description="Conda channel proxy/cache server")
     parser.add_argument("--config", "-c", default=None, help="Path to config.toml")
     parser.add_argument("--host", default=None, help="Bind host (overrides config)")
-    parser.add_argument("--port", type=int, default=None, help="Bind port (overrides config)")
-    parser.add_argument("--reload", action="store_true", help="Auto-reload on code changes (dev)")
+    parser.add_argument(
+        "--port", type=int, default=None, help="Bind port (overrides config)"
+    )
+    parser.add_argument(
+        "--reload", action="store_true", help="Auto-reload on code changes (dev)"
+    )
     args = parser.parse_args()
 
     config = load_config(args.config)
