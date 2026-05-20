@@ -2,10 +2,8 @@
 
 This is a lightweight, dependency-minimal caching proxy for conda package channels.
 Inspired by [Quetz](https://github.com/mamba-org/quetz) but focused on a single
-use-case: **transparently proxy and cache upstream channels** so your team or
+use-case: **transparently proxy and cache upstream channels** so your teams and/or
 CI pipelines can install packages quickly from a local mirror.
-
----
 
 ## Features
 
@@ -14,17 +12,13 @@ CI pipelines can install packages quickly from a local mirror.
 - **Stale-while-offline** – serves stale cached files if upstream is unreachable
 - **Atomic writes** – no corrupt partial files on disk
 - **Admin endpoints** – purge cache or force repodata refresh via HTTP
-- Single-file Python server (~200 lines), easy to audit and extend
-
----
+- Single-file Python server, easy to audit and extend
 
 ## Requirements
 
 ```bash
 pip install -r requirements.txt
 ```
-
----
 
 ## Quickstart
 
@@ -39,14 +33,14 @@ mamba install -c http://localhost:8000/channels/conda-forge -c http://localhost:
 
 ### CLI options
 
+```bash
+python server.py --config config.toml        # use config file
+                 --host 0.0.0.0              # bind to all interfaces
+                 --port 8080                 # custom port
+                 --cache-dir /path/to/cache  # override cache directory
+                 --log-level info            # set log level (debug, info, warning, error)
+                 --reload                    # auto-reload on code changes (dev)
 ```
-python server.py --config config.toml   # use config file
-                 --host 0.0.0.0         # bind to all interfaces
-                 --port 8080            # custom port
-                 --reload               # auto-reload on code changes (dev)
-```
-
----
 
 ## Configuration (`config.toml`)
 
@@ -79,18 +73,15 @@ http://localhost:8000/channels/conda-forge/linux-64/numpy-1.26.0-py311h...conda
 http://localhost:8000/channels/defaults/channeldata.json
 ```
 
----
-
 ## Admin API
 
 | Method | Path | Description |
 |--------|------|-------------|
 | `GET`    | `/` | List configured channels |
 | `GET`    | `/admin/cache/stats` | Disk usage per channel |
-<!-- | `DELETE` | `/admin/cache/{channel}` | Purge all files for a channel | -->
 | `DELETE` | `/admin/cache/{channel}/repodata` | Purge only repodata (force index refresh) |
+<!-- | `DELETE` | `/admin/cache/{channel}` | Purge all files for a channel | -->
 
----
 
 ## Using with conda / mamba
 
@@ -114,8 +105,6 @@ dependencies:
   - numpy
   - pandas
 ```
-
----
 
 ## Deployment tips
 
