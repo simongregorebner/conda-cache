@@ -83,11 +83,11 @@ http://localhost:8000/channels/defaults/channeldata.json
 <!-- | `DELETE` | `/admin/cache/{channel}` | Purge all files for a channel | -->
 
 
-## Using with conda / mamba
+## Using with conda / mamba / micromamba
 
 **Ad-hoc:**
 ```bash
-mamba install -c http://localhost:8000/channels/conda-forge numpy pandas
+micromamba install -c http://localhost:8000/channels/conda-forge numpy pandas
 ```
 
 **In `~/.condarc`:**
@@ -96,7 +96,7 @@ channels:
   - http://localhost:8000/channels/conda-forge
 ```
 
-**In `environment.yml`:**
+**In `environment.yaml`:**
 ```yaml
 name: myenv
 channels:
