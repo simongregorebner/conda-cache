@@ -284,18 +284,18 @@ def create_app(config: dict) -> FastAPI:
     #         log.info("Purged cache for channel '%s'", channel_name)
     #     return {"purged": channel_name}
 
-    @app.delete("/admin/cache/{channel_name}/repodata")
-    async def purge_repodata(channel_name: str):
-        """Delete only the repodata files for a channel (forces index refresh)."""
-        if channel_name not in channels:
-            raise HTTPException(status_code=404, detail="Unknown channel")
-        count = 0
-        for path in (cache_root / channel_name).rglob("*"):
-            if path.is_file() and is_repodata(path.name):
-                path.unlink()
-                count += 1
-        log.info("Purged %d repodata file(s) for channel '%s'", count, channel_name)
-        return {"purged_repodata_files": count, "channel": channel_name}
+    # @app.delete("/admin/cache/{channel_name}/repodata")
+    # async def purge_repodata(channel_name: str):
+    #     """Delete only the repodata files for a channel (forces index refresh)."""
+    #     if channel_name not in channels:
+    #         raise HTTPException(status_code=404, detail="Unknown channel")
+    #     count = 0
+    #     for path in (cache_root / channel_name).rglob("*"):
+    #         if path.is_file() and is_repodata(path.name):
+    #             path.unlink()
+    #             count += 1
+    #     log.info("Purged %d repodata file(s) for channel '%s'", count, channel_name)
+    #     return {"purged_repodata_files": count, "channel": channel_name}
 
     @app.get("/admin/cache/stats")
     async def cache_stats():

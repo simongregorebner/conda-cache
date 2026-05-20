@@ -79,7 +79,7 @@ http://localhost:8000/channels/defaults/channeldata.json
 |--------|------|-------------|
 | `GET`    | `/` | List configured channels |
 | `GET`    | `/admin/cache/stats` | Disk usage per channel |
-| `DELETE` | `/admin/cache/{channel}/repodata` | Purge only repodata (force index refresh) |
+<!-- | `DELETE` | `/admin/cache/{channel}/repodata` | Purge only repodata (force index refresh) | -->
 <!-- | `DELETE` | `/admin/cache/{channel}` | Purge all files for a channel | -->
 
 
