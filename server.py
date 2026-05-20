@@ -13,13 +13,10 @@ Then point conda/mamba at it:
     #     - http://localhost:8000/channels/defaults
 """
 
-import asyncio
-import hashlib
 import logging
 import time
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import Optional
 
 import httpx
 import tomllib
@@ -43,7 +40,7 @@ log = logging.getLogger("conda-proxy")
 
 DEFAULT_CONFIG = {
     "server": {
-        "host": "127.0.0.1",
+        "host": "0.0.0.0",
         "port": 8000,
         "cache_dir": "./conda_cache",
         "log_level": "info",
@@ -66,7 +63,7 @@ DEFAULT_CONFIG = {
 }
 
 
-def load_config(path: Optional[str]) -> dict:
+def load_config(path: str | None) -> dict:
     cfg = {k: dict(v) for k, v in DEFAULT_CONFIG.items()}
     if path is None:
         log.warning(
@@ -178,6 +175,7 @@ def create_app(config: dict) -> FastAPI:
         }
 
     @app.get("/channels/{channel_name}/{subpath:path}")
+    @app.get("/get/{channel_name}/{subpath:path}")
     async def proxy(channel_name: str, subpath: str, request: Request):
         """
         Proxy and cache requests for a configured channel.
